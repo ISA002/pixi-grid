@@ -2,6 +2,8 @@
 
 import * as PIXI from 'pixi.js';
 // import gsap from 'gsap';
+import gridShader from './gridShader.glsl';
+import distortionFilter from './distortionShader.glsl';
 
 window.PIXI = PIXI;
 export default class Scene {
@@ -15,12 +17,16 @@ export default class Scene {
 
     this.imagesArray = images;
 
+    this.width = window.innerWidth;
+    this.height = window.innerHeight;
+
     this.loader = new PIXI.Loader();
 
     this.root = new PIXI.Container();
     this.app.stage.addChild(this.root);
 
     this.canvasContainer.appendChild(this.app.view);
+    this.pointerDownTarget = 1;
 
     this.preload();
   }
@@ -67,6 +73,25 @@ export default class Scene {
   setup = () => {
     this.root.width = window.innerWidth;
     this.root.height = window.innerHeight;
+
+    const background = new PIXI.Sprite();
+    background.width = this.width;
+    background.height = this.height;
+
+    this.gridFilter = new PIXI.Filter(null, gridShader, {});
+    background.filters = [this.gridFilter];
+
+    this.distortionFilter = new PIXI.Filter(null, distortionFilter, {
+      uResolution: {
+        x: this.width,
+        y: this.height,
+      },
+      uPointerDown: this.pointerDownTarget,
+    });
+
+    this.app.stage.filters = [this.distortionFilter];
+
+    this.root.addChild(background);
 
     this.app.stage.interactive = true;
 

@@ -2,7 +2,6 @@
 precision mediump float;
 #endif
 
-// This function returns 1 if `coord` correspond to a grid line, 0 otherwise
 float isGridLine (vec2 coord) {
   vec2 pixelsPerGrid = vec2(50.0, 50.0);
   vec2 gridCoords = fract(coord / pixelsPerGrid);
