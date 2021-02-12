@@ -2,6 +2,8 @@ require('@babel/register');
 
 global.RUNTIME_ENV = 'server';
 
+require('pixi-shim');
+
 require('../../tools/hooks')();
 
 const server = require('./server').default;

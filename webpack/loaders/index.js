@@ -26,5 +26,9 @@ module.exports = [
       emitFile: process.env.TARGET_ENV !== 'node',
     },
   },
+  {
+    test: /\.(glsl|frag|vert)$/,
+    use: 'glsl-shader-loader',
+  },
   ...styles,
 ];
