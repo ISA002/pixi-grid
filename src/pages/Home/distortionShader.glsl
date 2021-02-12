@@ -24,8 +24,8 @@ vec2 computeUV (vec2 uv, float k, float kcube) {
 void main () {
   vec2 uv = gl_FragCoord.xy / uResolution.xy;
 
-  float k = -1.0 * uPointerDown;
-  float kcube = 0.5 * uPointerDown;
+  float k = 0.6 * uPointerDown;
+  float kcube = -0.53 * uPointerDown;
   float offset = 0.02 * uPointerDown;
   
   float red = texture2D(uSampler, computeUV(uv, k + offset, kcube)).r;
