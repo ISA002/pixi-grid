@@ -16,10 +16,7 @@ class Grid {
       const cutSize = cutVertical ? 'w' : 'h';
       const cutAxis = cutVertical ? 'x' : 'y';
       if (cutSide > this.gridMin * 2) {
-        const rect1Size = this.randomInRange(
-          this.gridMin,
-          cutSide - this.gridMin
-        );
+        const rect1Size = Math.floor(this.gridMin);
         const rect1 = Object.assign({}, currentRect, { [cutSize]: rect1Size });
         const rect2 = Object.assign({}, currentRect, {
           [cutAxis]: currentRect[cutAxis] + rect1Size,
@@ -31,10 +28,6 @@ class Grid {
         this.splitCurrentRect();
       }
     }
-  };
-
-  randomInRange = (min, max) => {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
   };
 
   generateRects = () => {

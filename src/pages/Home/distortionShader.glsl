@@ -12,9 +12,9 @@ vec2 computeUV (vec2 uv, float k, float kcube) {
   float r2 = t.x * t.x + t.y * t.y;
   float f = 0.0;
   if (kcube == 0.0) {
-    f = 1.0 + r2 * k;
+    f = 0.9 + r2 * k;
   } else {
-    f = 1.0 + r2 * (k + kcube * sqrt(r2));
+    f = 0.9 + r2 * (k + kcube * sqrt(r2));
   }
   vec2 nUv = f * t + 0.5;
   nUv.y = 1.0 - nUv.y;

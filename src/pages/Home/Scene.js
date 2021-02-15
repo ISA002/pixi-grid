@@ -5,6 +5,7 @@ import * as PIXI from 'pixi.js';
 import gridShader from './gridShader.glsl';
 import distortionFilter from './distortionShader.glsl';
 import Grid from './Grid';
+// import { BulgePinchFilter } from 'pixi-filters';
 
 window.PIXI = PIXI;
 export default class Scene {
@@ -17,6 +18,9 @@ export default class Scene {
     });
 
     this.imagesArray = images;
+    this.imagesSprites = [];
+
+    console.log(this.imagesArray[0]);
 
     this.width = window.innerWidth;
     this.height = window.innerHeight;
@@ -83,7 +87,9 @@ export default class Scene {
     background.width = this.width;
     background.height = this.height;
 
-    this.gridFilter = new PIXI.Filter(null, gridShader, {});
+    this.gridFilter = new PIXI.Filter(null, gridShader, {
+      uPointerDiff: new PIXI.Point(),
+    });
     background.filters = [this.gridFilter];
 
     this.distortionFilter = new PIXI.Filter(null, distortionFilter, {
@@ -95,18 +101,23 @@ export default class Scene {
       uPointerDiff: new PIXI.Point(),
     });
 
-    this.app.stage.filters = [this.distortionFilter];
+    // this.bulgeFilter = new BulgePinchFilter();
+
+    this.app.stage.filters = [
+      this.distortionFilter,
+      // this.bulgeFilter
+    ];
 
     this.root.addChild(background);
 
     this.app.stage.interactive = true;
 
-    this.gridSize = 50;
+    this.gridSize = 130;
     this.gridMin = 3;
     this.imagePadding = 20;
 
     this.initGrid();
-    this.initRectsAndImages();
+    this.initImages();
 
     this.canvasContainer.addEventListener('pointerdown', this.onPointerDown);
     this.canvasContainer.addEventListener('pointerup', this.onPointerUp);
@@ -130,6 +141,15 @@ export default class Scene {
     if (this.pointerDownTarget) {
       this.diffX = this.pointerDiffStart.x + (layerX - this.pointerStart.x);
       this.diffY = this.pointerDiffStart.y + (layerY - this.pointerStart.y);
+
+      this.diffX =
+        this.diffX > 0
+          ? Math.min(this.diffX, this.centerX + this.imagePadding)
+          : Math.max(this.diffX, -(this.centerX + this.widthRest));
+      this.diffY =
+        this.diffY > 0
+          ? Math.min(this.diffY, this.centerY + this.imagePadding)
+          : Math.max(this.diffY, -(this.centerY + this.heightRest));
     }
   };
 
@@ -160,20 +180,24 @@ export default class Scene {
     this.rects = this.grid.generateRects();
   };
 
-  initRectsAndImages = () => {
-    const graphics = new PIXI.Graphics();
-    graphics.beginFill(0xaa22cc);
-
-    this.rects.forEach(rect => {
-      graphics.drawRect(
-        rect.x * this.gridSize,
-        rect.y * this.gridSize,
-        rect.w * this.gridSize - this.imagePadding,
-        rect.h * this.gridSize - this.imagePadding
+  initImages = () => {
+    this.rects.forEach((rect, index) => {
+      const texture = new PIXI.Texture.from(
+        this.imagesArray[index % this.imagesArray.length]
       );
+
+      const image = new PIXI.Sprite(texture);
+
+      image.x = rect.x * this.gridSize;
+      image.y = rect.y * this.gridSize;
+      image.width = rect.w * this.gridSize - this.imagePadding;
+      image.height = rect.h * this.gridSize - this.imagePadding;
+      this.imagesSprites.push(image);
     });
-    graphics.endFill();
-    this.root.addChild(graphics);
+
+    this.imagesSprites.forEach(image => {
+      this.root.addChild(image);
+    });
   };
 
   render = () => {
@@ -189,6 +213,20 @@ export default class Scene {
         this.distortionFilter.uniforms.uPointerDiff.x - this.centerX;
       this.root.y =
         this.distortionFilter.uniforms.uPointerDiff.y - this.centerY;
+
+      this.gridFilter.uniforms.uPointerDiff.x +=
+        (this.diffX - this.distortionFilter.uniforms.uPointerDiff.x) * 0.2;
+      this.gridFilter.uniforms.uPointerDiff.y +=
+        (this.diffY - this.distortionFilter.uniforms.uPointerDiff.y) * 0.2;
+
+      this.diffX = this.diffX % 1000;
+      // > 0
+      //   ? Math.min(this.diffX, this.centerX + this.imagePadding)
+      //   : Math.max(this.diffX, -(this.centerX + this.widthRest));
+      this.diffY = this.diffY % 1000;
+      //  > 0
+      //   ? Math.min(this.diffY, this.centerY + this.imagePadding)
+      //   : Math.max(this.diffY, -(this.centerY + this.heightRest));
     });
   };
 }
